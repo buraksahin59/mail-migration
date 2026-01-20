@@ -34,7 +34,9 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('mode', dryRun ? 'dryrun' : 'migrate');
+      const jobMode = dryRun ? 'dryrun' : 'migrate';
+      formData.append('mode', jobMode);
+      console.log(`[Frontend] Creating job with mode: ${jobMode}`);
       formData.append('batch_size', batchSize.toString());
       formData.append('concurrency', concurrency.toString());
 

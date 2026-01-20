@@ -1,17 +1,36 @@
 // In-memory password storage (MVP approach)
 // In production, consider encrypting and storing in DB
-const passwordStore = new Map<string, Map<number, { old: string; new?: string }>>();
+// Using global to ensure singleton across Next.js module instances
+declare global {
+  // eslint-disable-next-line no-var
+  var __passwordStore: Map<string, Map<number, { old: string; new?: string }>> | undefined;
+}
+
+const passwordStore = global.__passwordStore || new Map<string, Map<number, { old: string; new?: string }>>();
+if (!global.__passwordStore) {
+  global.__passwordStore = passwordStore;
+}
 
 export function storePasswords(jobId: string, rowIndex: number, oldPassword: string, newPassword?: string) {
+  console.log(`[Security] Storing passwords for jobId=${jobId}, rowIndex=${rowIndex}`);
   if (!passwordStore.has(jobId)) {
     passwordStore.set(jobId, new Map());
   }
   passwordStore.get(jobId)!.set(rowIndex, { old: oldPassword, new: newPassword });
+  console.log(`[Security] Password stored. Store size: ${passwordStore.size}, Job entries: ${passwordStore.get(jobId)?.size || 0}`);
 }
 
 export function getPassword(jobId: string, rowIndex: number, type: 'old' | 'new' = 'old'): string | undefined {
+  console.log(`[Security] Getting password for jobId=${jobId}, rowIndex=${rowIndex}, type=${type}`);
+  console.log(`[Security] Store size: ${passwordStore.size}, Has jobId: ${passwordStore.has(jobId)}`);
+  if (passwordStore.has(jobId)) {
+    console.log(`[Security] Job entries: ${passwordStore.get(jobId)?.size || 0}, Has rowIndex: ${passwordStore.get(jobId)?.has(rowIndex)}`);
+  }
   const passwords = passwordStore.get(jobId)?.get(rowIndex);
-  if (!passwords) return undefined;
+  if (!passwords) {
+    console.error(`[Security] Password not found for jobId=${jobId}, rowIndex=${rowIndex}`);
+    return undefined;
+  }
   return type === 'old' ? passwords.old : (passwords.new || passwords.old);
 }
 

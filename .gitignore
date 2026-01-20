@@ -7,8 +7,9 @@ node_modules/
 /coverage
 
 # Next.js
-/.next/
+.next/
 /out/
+.cursor/*.log    
 
 # Production
 /build
@@ -36,6 +37,8 @@ next-env.d.ts
 # Data directory (SQLite and logs)
 /data/*.db
 /data/*.db-journal
+/data/*.db-shm
+/data/*.db-wal
 /data/logs/*.log
 
 # Keep data directory structure

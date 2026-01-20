@@ -75,6 +75,8 @@ export async function POST(request: NextRequest) {
 
     // Create job
     const jobId = nanoid();
+    const jobMode = mode === 'dryrun' ? 'dryrun' : 'migrate'; // Ensure correct mode
+    console.log(`[API] Creating job ${jobId} with mode: ${jobMode}`);
     const optionsJson = JSON.stringify({
       defaultBatchSize,
       concurrency,
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
     dbQueries.createJob.run(
       jobId,
       Date.now(),
-      mode,
+      jobMode,
       concurrency,
       optionsJson
     );
@@ -112,7 +114,9 @@ export async function POST(request: NextRequest) {
       );
 
       // Store passwords in memory (MVP approach)
+      console.log(`[API] Storing passwords for jobId=${jobId}, rowIndex=${rowIndex}`);
       storePasswords(jobId, rowIndex, row.old_password!, row.new_password);
+      console.log(`[API] Passwords stored for jobId=${jobId}, rowIndex=${rowIndex}`);
     });
 
     return NextResponse.json({
